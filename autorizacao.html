@@ -85,26 +85,6 @@
             padding: 40px 30px;
         }
 
-        .loading-container {
-            text-align: center;
-            padding: 40px 0;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #6ECC01;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         .error-container {
             display: none;
             text-align: center;
@@ -127,7 +107,7 @@
         }
 
         .form-container {
-            display: none;
+            display: block;
         }
 
         .success-container {
@@ -317,6 +297,11 @@
             margin-right: 10px;
         }
 
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .pulseira-info {
             background: linear-gradient(135deg, #FFF9C4, #FFF59D);
             padding: 20px;
@@ -396,27 +381,21 @@
         </div>
 
         <div class="content">
-            <!-- Loading -->
-            <div class="loading-container" id="loadingContainer">
-                <div class="spinner"></div>
-                <p style="color: #666;">Carregando suas informações...</p>
-            </div>
-
             <!-- Erro -->
             <div class="error-container" id="errorContainer">
                 <div class="error-icon">⚠️</div>
-                <h2>Link Inválido ou Expirado</h2>
+                <h2>Erro ao Processar</h2>
                 <p id="errorMessage">
-                    Este link de autorização não é válido ou já foi utilizado.<br><br>
-                    Por favor, entre em contato com a pessoa que enviou o link para obter um novo.
+                    Ocorreu um erro ao processar sua autorização.<br>
+                    Por favor, tente novamente ou entre em contato conosco.
                 </p>
             </div>
 
             <!-- Formulário -->
             <div class="form-container" id="formContainer">
                 <div class="info-box">
-                    <p><strong>Olá, <span id="nomeAcompanhante">...</span>!</strong></p>
-                    <p><strong><span id="nomeTitular">...</span></strong> confirmou sua presença no evento de Entrega de Chaves do Vitória Caucaia.</p>
+                    <p><strong>Bem-vindo(a)!</strong></p>
+                    <p>Você foi convidado(a) para o evento de Entrega de Chaves do Vitória Caucaia.</p>
                     <p style="margin-top: 15px;">📅 <strong>Data:</strong> 20 de dezembro de 2025</p>
                     <p>📍 <strong>Local:</strong> Rua Padre Climério Chaves, 536 – Caucaia</p>
                 </div>
@@ -427,10 +406,14 @@
 
                 <form id="autorizacaoForm">
                     <input type="hidden" id="tokenIndividual" name="tokenIndividual">
-                    <input type="hidden" id="tokenFamilia" name="tokenFamilia">
 
                     <div class="form-group">
-                        <label for="cpfAcompanhante">Confirme seu CPF *</label>
+                        <label for="nomeCompleto">Seu Nome Completo *</label>
+                        <input type="text" id="nomeCompleto" name="nomeCompleto" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cpfAcompanhante">Seu CPF *</label>
                         <input type="text" id="cpfAcompanhante" name="cpfAcompanhante" class="form-control" placeholder="000.000.000-00" required>
                         <small style="color: #6c757d; margin-top: 5px; display: block;">Para confirmar sua identidade</small>
                     </div>
@@ -534,8 +517,8 @@
             });
         });
 
-        // Carrega dados ao iniciar
-        window.onload = async function() {
+        // Captura o token da URL ao carregar
+        window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             
@@ -544,34 +527,12 @@
                 return;
             }
             
-            try {
-                // Valida o token no servidor
-                const response = await fetch(`${SCRIPT_URL}?validarToken=${encodeURIComponent(token)}`);
-                const resultado = await response.json();
-                
-                if (!resultado.valido) {
-                    mostrarErro(resultado.erro || 'Token inválido ou expirado.');
-                    return;
-                }
-                
-                // Preenche os dados
-                document.getElementById('nomeAcompanhante').textContent = resultado.nomeAcompanhante;
-                document.getElementById('nomeTitular').textContent = resultado.nomeTitular;
-                document.getElementById('tokenIndividual').value = token;
-                document.getElementById('tokenFamilia').value = resultado.tokenFamilia;
-                
-                // Mostra o formulário
-                document.getElementById('loadingContainer').style.display = 'none';
-                document.getElementById('formContainer').style.display = 'block';
-                
-            } catch (error) {
-                console.error('Erro ao validar token:', error);
-                mostrarErro('Erro ao carregar informações. Verifique sua conexão e tente novamente.');
-            }
+            // Armazena o token no campo hidden
+            document.getElementById('tokenIndividual').value = token;
         };
 
         function mostrarErro(mensagem) {
-            document.getElementById('loadingContainer').style.display = 'none';
+            document.getElementById('formContainer').style.display = 'none';
             document.getElementById('errorMessage').textContent = mensagem;
             document.getElementById('errorContainer').style.display = 'block';
         }
@@ -591,6 +552,13 @@
                 return;
             }
             
+            // Valida nome
+            const nome = document.getElementById('nomeCompleto').value.trim();
+            if (nome.length < 3) {
+                alert('Por favor, insira seu nome completo.');
+                return;
+            }
+            
             submitBtn.disabled = true;
             btnLoading.style.display = 'inline-block';
             btnText.textContent = 'Enviando...';
@@ -601,11 +569,13 @@
                 const dados = {
                     acao: 'autorizarAcompanhante',
                     tokenIndividual: document.getElementById('tokenIndividual').value,
-                    tokenFamilia: document.getElementById('tokenFamilia').value,
+                    nome: nome,
                     cpf: document.getElementById('cpfAcompanhante').value,
                     autorizou: autorizou,
                     timestamp: new Date().toISOString()
                 };
+                
+                console.log('Enviando dados:', dados);
                 
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -617,11 +587,7 @@
                 });
                 
                 // Mostra confirmação
-                mostrarSucesso(
-                    document.getElementById('nomeAcompanhante').textContent,
-                    dados.cpf,
-                    autorizou
-                );
+                mostrarSucesso(nome, dados.cpf, autorizou);
                 
             } catch (error) {
                 console.error('Erro ao enviar:', error);
