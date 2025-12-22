@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autorização de Uso de Imagem - Vitória Caucaia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6ECC01 0%, #357C00 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00512A 0%, #005D2C 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateX(0) translateY(0); }
+            100% { transform: translateX(-50px) translateY(-50px); }
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .loading-container {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6ECC01;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-container {
+            display: none;
+            text-align: center;
+            padding: 40px 30px;
+        }
+
+        .error-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .error-container h2 {
+            color: #d32f2f;
+            margin-bottom: 15px;
+        }
+
+        .error-container p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .success-container {
+            display: none;
+            text-align: center;
+            padding: 40px 30px;
+        }
+
+        .success-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 4px solid #357C00;
+        }
+
+        .info-box p {
+            margin: 8px 0;
+            color: #333;
+        }
+
+        .info-box strong {
+            color: #005D2C;
+        }
+
+        .termo-box {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .termo-box h3 {
+            color: #005D2C;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+        }
+
+        .termo-box h3::before {
+            content: '📸';
+            margin-right: 10px;
+        }
+
+        .termo-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+        }
+
+        .termo-content p {
+            margin-bottom: 12px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .termo-content ul {
+            margin: 12px 0;
+            padding-left: 25px;
+        }
+
+        .termo-content li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #005D2C;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            border-color: #6ECC01;
+            outline: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(110, 204, 1, 0.2);
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            padding: 18px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .radio-item:hover {
+            border-color: #6ECC01;
+            transform: translateX(5px);
+        }
+
+        .radio-item.selected {
+            border-color: #6ECC01;
+            background: linear-gradient(135deg, rgba(110, 204, 1, 0.15), rgba(53, 124, 0, 0.1));
+        }
+
+        .radio-item input[type="radio"] {
+            margin-right: 12px;
+            scale: 1.3;
+        }
+
+        .radio-item label {
+            flex: 1;
+            cursor: pointer;
+            margin: 0;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #6ECC01, #357C00);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px auto 0;
+            min-width: 200px;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(110, 204, 1, 0.4);
+        }
+
+        .btn-submit:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-loading {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff40;
+            border-top: 2px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        .pulseira-info {
+            background: linear-gradient(135deg, #FFF9C4, #FFF59D);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            border-left: 4px solid #F57F17;
+            text-align: center;
+        }
+
+        .pulseira-info strong {
+            display: block;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #F57F17;
+        }
+
+        .pulseira-verde {
+            background: linear-gradient(135deg, #C8E6C9, #A5D6A7);
+            border-left-color: #2E7D32;
+        }
+
+        .pulseira-verde strong {
+            color: #2E7D32;
+        }
+
+        .pulseira-vermelha {
+            background: linear-gradient(135deg, #FFCDD2, #EF9A9A);
+            border-left-color: #C62828;
+        }
+
+        .pulseira-vermelha strong {
+            color: #C62828;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.6em;
+            }
+            
+            .content {
+                padding: 30px 20px;
+            }
+
+            .termo-content {
+                max-height: 250px;
+            }
+        }
+
+        .alert-box {
+            background: #FFF3E0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #FF9800;
+        }
+
+        .alert-box p {
+            margin: 0;
+            color: #E65100;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>VITÓRIA CAUCAIA</h1>
+            <div class="subtitle">📸 Autorização de Uso de Imagem</div>
+        </div>
+
+        <div class="content">
+            <!-- Loading -->
+            <div class="loading-container" id="loadingContainer">
+                <div class="spinner"></div>
+                <p style="color: #666;">Carregando suas informações...</p>
+            </div>
+
+            <!-- Erro -->
+            <div class="error-container" id="errorContainer">
+                <div class="error-icon">⚠️</div>
+                <h2>Link Inválido ou Expirado</h2>
+                <p id="errorMessage">
+                    Este link de autorização não é válido ou já foi utilizado.<br><br>
+                    Por favor, entre em contato com a pessoa que enviou o link para obter um novo.
+                </p>
+            </div>
+
+            <!-- Formulário -->
+            <div class="form-container" id="formContainer">
+                <div class="info-box">
+                    <p><strong>Olá, <span id="nomeAcompanhante">...</span>!</strong></p>
+                    <p><strong><span id="nomeTitular">...</span></strong> confirmou sua presença no evento de Entrega de Chaves do Vitória Caucaia.</p>
+                    <p style="margin-top: 15px;">📅 <strong>Data:</strong> 20 de dezembro de 2025</p>
+                    <p>📍 <strong>Local:</strong> Rua Padre Climério Chaves, 536 – Caucaia</p>
+                </div>
+
+                <div class="alert-box">
+                    <p>⚠️ Precisamos da sua autorização para uso de imagem no evento</p>
+                </div>
+
+                <form id="autorizacaoForm">
+                    <input type="hidden" id="tokenIndividual" name="tokenIndividual">
+                    <input type="hidden" id="tokenFamilia" name="tokenFamilia">
+
+                    <div class="form-group">
+                        <label for="cpfAcompanhante">Confirme seu CPF *</label>
+                        <input type="text" id="cpfAcompanhante" name="cpfAcompanhante" class="form-control" placeholder="000.000.000-00" required>
+                        <small style="color: #6c757d; margin-top: 5px; display: block;">Para confirmar sua identidade</small>
+                    </div>
+
+                    <div class="termo-box">
+                        <h3>Termo de Autorização de Uso de Imagem</h3>
+                        
+                        <div class="termo-content">
+                            <p><strong>AUTORIZAÇÃO DE USO DE IMAGEM E VOZ</strong></p>
+                            
+                            <p>Eu, identificado(a) acima, AUTORIZO a utilização da minha imagem e voz em fotografias, vídeos e outros registros audiovisuais captados durante o evento de Entrega de Chaves do empreendimento <strong>Vitória Caucaia</strong>, realizado em 20 de dezembro de 2025.</p>
+                            
+                            <p><strong>Finalidades autorizadas:</strong></p>
+                            <ul>
+                                <li>Divulgação em redes sociais (Instagram, Facebook, LinkedIn, YouTube, etc.)</li>
+                                <li>Publicação no site institucional da construtora</li>
+                                <li>Materiais promocionais e publicitários (impressos e digitais)</li>
+                                <li>Apresentações institucionais e comerciais</li>
+                                <li>Registros históricos do empreendimento</li>
+                            </ul>
+                            
+                            <p><strong>Condições:</strong></p>
+                            <ul>
+                                <li>Esta autorização é concedida a título gratuito</li>
+                                <li>Validade: 5 (cinco) anos a partir da data do evento</li>
+                                <li>A autorização pode ser revogada mediante solicitação por escrito</li>
+                                <li>O uso das imagens será sempre respeitoso e adequado</li>
+                            </ul>
+                            
+                            <p style="margin-top: 15px;"><small>Ao autorizar, você concorda com os termos acima e confirma que leu e compreendeu todas as condições.</small></p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="margin-bottom: 15px;">Você autoriza o uso de sua imagem? *</label>
+                        
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" name="autorizacao" id="autorizaSim" value="sim" required>
+                                <label for="autorizaSim">✅ <strong>SIM</strong>, autorizo o uso de minha imagem conforme os termos acima</label>
+                            </div>
+                            
+                            <div class="radio-item">
+                                <input type="radio" name="autorizacao" id="autorizaNao" value="nao" required>
+                                <label for="autorizaNao">❌ <strong>NÃO</strong> autorizo o uso de minha imagem</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <div class="btn-loading" id="btnLoading"></div>
+                        <span id="btnText">Confirmar Autorização</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Sucesso -->
+            <div class="success-container" id="successContainer">
+                <div class="success-icon">🎉</div>
+                <h2 style="color: #005D2C; margin-bottom: 20px;">Autorização Registrada!</h2>
+                <p style="font-size: 1.1em; color: #666; margin-bottom: 25px;">Obrigado por confirmar sua autorização.</p>
+                
+                <div id="pulseiraInfo" class="pulseira-info">
+                    <strong>No dia do evento:</strong>
+                    <p id="pulseiraTexto"></p>
+                </div>
+
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                    <p style="color: #666; margin-bottom: 10px;"><strong>Resumo da sua autorização:</strong></p>
+                    <p style="color: #333;"><strong>Nome:</strong> <span id="nomeConfirmacao"></span></p>
+                    <p style="color: #333;"><strong>CPF:</strong> <span id="cpfConfirmacao"></span></p>
+                    <p style="color: #333;"><strong>Autorização:</strong> <span id="statusConfirmacao"></span></p>
+                    <p style="color: #333;"><strong>Data/Hora:</strong> <span id="dataConfirmacao"></span></p>
+                </div>
+
+                <p style="margin-top: 25px; color: #6c757d; font-size: 0.95em;">
+                    Te aguardamos no dia 20 de dezembro! 🏠🔑
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/SUA_URL_AQUI/exec';
+
+        // Formatação de CPF
+        document.getElementById('cpfAcompanhante').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.substr(0, 11);
+            value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            e.target.value = value;
+        });
+
+        // Seleção visual dos radio buttons
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.radio-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                this.closest('.radio-item').classList.add('selected');
+            });
+        });
+
+        // Carrega dados ao iniciar
+        window.onload = async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            
+            if (!token) {
+                mostrarErro('Link inválido. Parâmetro de autenticação não encontrado.');
+                return;
+            }
+            
+            try {
+                // Valida o token no servidor
+                const response = await fetch(`${SCRIPT_URL}?validarToken=${encodeURIComponent(token)}`);
+                const resultado = await response.json();
+                
+                if (!resultado.valido) {
+                    mostrarErro(resultado.erro || 'Token inválido ou expirado.');
+                    return;
+                }
+                
+                // Preenche os dados
+                document.getElementById('nomeAcompanhante').textContent = resultado.nomeAcompanhante;
+                document.getElementById('nomeTitular').textContent = resultado.nomeTitular;
+                document.getElementById('tokenIndividual').value = token;
+                document.getElementById('tokenFamilia').value = resultado.tokenFamilia;
+                
+                // Mostra o formulário
+                document.getElementById('loadingContainer').style.display = 'none';
+                document.getElementById('formContainer').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Erro ao validar token:', error);
+                mostrarErro('Erro ao carregar informações. Verifique sua conexão e tente novamente.');
+            }
+        };
+
+        function mostrarErro(mensagem) {
+            document.getElementById('loadingContainer').style.display = 'none';
+            document.getElementById('errorMessage').textContent = mensagem;
+            document.getElementById('errorContainer').style.display = 'block';
+        }
+
+        // Submissão do formulário
+        document.getElementById('autorizacaoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const btnLoading = document.getElementById('btnLoading');
+            const btnText = document.getElementById('btnText');
+            
+            // Valida CPF
+            const cpf = document.getElementById('cpfAcompanhante').value.replace(/\D/g, '');
+            if (cpf.length !== 11) {
+                alert('Por favor, insira um CPF válido com 11 dígitos.');
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            btnLoading.style.display = 'inline-block';
+            btnText.textContent = 'Enviando...';
+            
+            try {
+                const autorizou = document.querySelector('input[name="autorizacao"]:checked').value === 'sim';
+                
+                const dados = {
+                    acao: 'autorizarAcompanhante',
+                    tokenIndividual: document.getElementById('tokenIndividual').value,
+                    tokenFamilia: document.getElementById('tokenFamilia').value,
+                    cpf: document.getElementById('cpfAcompanhante').value,
+                    autorizou: autorizou,
+                    timestamp: new Date().toISOString()
+                };
+                
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dados)
+                });
+                
+                // Mostra confirmação
+                mostrarSucesso(
+                    document.getElementById('nomeAcompanhante').textContent,
+                    dados.cpf,
+                    autorizou
+                );
+                
+            } catch (error) {
+                console.error('Erro ao enviar:', error);
+                alert('Erro ao enviar autorização. Por favor, tente novamente.');
+                
+                submitBtn.disabled = false;
+                btnLoading.style.display = 'none';
+                btnText.textContent = 'Confirmar Autorização';
+            }
+        });
+
+        function mostrarSucesso(nome, cpf, autorizou) {
+            document.getElementById('formContainer').style.display = 'none';
+            
+            const pulseiraInfo = document.getElementById('pulseiraInfo');
+            const pulseiraTexto = document.getElementById('pulseiraTexto');
+            
+            if (autorizou) {
+                pulseiraInfo.classList.add('pulseira-verde');
+                pulseiraTexto.textContent = 'Você receberá uma PULSEIRA VERDE indicando que autorizou o uso de imagem. Os fotógrafos poderão registrar sua presença no evento! 📸';
+            } else {
+                pulseiraInfo.classList.add('pulseira-vermelha');
+                pulseiraTexto.textContent = 'Você receberá uma PULSEIRA VERMELHA indicando que não autorizou o uso de imagem. Os fotógrafos não registrarão sua presença no evento.';
+            }
+            
+            document.getElementById('nomeConfirmacao').textContent = nome;
+            document.getElementById('cpfConfirmacao').textContent = cpf;
+            document.getElementById('statusConfirmacao').textContent = autorizou ? '✅ Autorizado' : '❌ Não autorizado';
+            document.getElementById('dataConfirmacao').textContent = new Date().toLocaleString('pt-BR');
+            
+            document.getElementById('successContainer').style.display = 'block';
+            
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+</body>
+</html>
