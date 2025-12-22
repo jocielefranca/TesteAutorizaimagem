@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmação de Presença - Entrega de Chaves</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6ECC01 0%, #357C00 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00512A 0%, #005D2C 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateX(0) translateY(0); }
+            100% { transform: translateX(-50px) translateY(-50px); }
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            font-size: 1.3em;
+            font-weight: 300;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .address {
+            font-size: 1em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-content {
+            padding: 40px 30px;
+            min-height: 200px;
+        }
+        
+        .form-content.success-mode {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 500px !important;
+            padding: 60px 30px !important;
+        }
+
+        .intro-text {
+            background: linear-gradient(135deg, #C5F167, #F0F5CD);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 4px solid #6ECC01;
+        }
+
+        .section {
+            margin-bottom: 35px;
+            padding: 25px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .section h3 {
+            color: #005D2C;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h3::before {
+            content: '📋';
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #005D2C;
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus {
+            border-color: #6ECC01;
+            outline: none;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(110, 204, 1, 0.2);
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .radio-item:hover {
+            border-color: #6ECC01;
+            transform: translateX(5px);
+        }
+
+        .radio-item.selected {
+            border-color: #6ECC01;
+            background: linear-gradient(135deg, rgba(110, 204, 1, 0.15), rgba(53, 124, 0, 0.1));
+        }
+
+        .radio-item input[type="radio"] {
+            margin-right: 12px;
+            scale: 1.2;
+        }
+
+        .requirements {
+            background: linear-gradient(135deg, #F0F5CD, #C5F167);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 4px solid #357C00;
+            margin: 25px 0;
+        }
+
+        .requirements h4 {
+            color: #005D2C;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+        }
+
+        .requirements h4::before {
+            content: '⚠️';
+            margin-right: 10px;
+        }
+
+        .requirements ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .requirements li {
+            padding: 8px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .requirements li::before {
+            content: '✓';
+            color: #357C00;
+            font-weight: bold;
+            margin-right: 10px;
+            margin-top: 2px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #6ECC01, #357C00);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 30px auto 0;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(110, 204, 1, 0.4);
+        }
+
+        .btn-submit:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff40;
+            border-top: 2px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .confirmation-message {
+            display: none;
+            background: linear-gradient(135deg, #C5F167, #F0F5CD) !important;
+            color: #005D2C !important;
+            padding: 40px 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px auto;
+            border: 3px solid #6ECC01;
+            max-width: 700px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .confirmation-message h3 {
+            margin-bottom: 10px;
+            color: #005D2C !important;
+        }
+
+        .error-message {
+            display: none;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+            border: 2px solid #ff4757;
+        }
+
+        .error-message::before {
+            content: '❌';
+            font-size: 2em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .acompanhantes-container {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+
+        .acompanhante-item {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #6ECC01;
+        }
+
+        .acompanhante-item h4 {
+            color: #005D2C;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            scale: 1.3;
+        }
+
+        .termo-box {
+            background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #357C00;
+            margin-top: 15px;
+        }
+
+        .termo-box h4 {
+            color: #005D2C;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .termo-box p {
+            font-size: 0.9em;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .links-acompanhantes {
+            margin-top: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #6ECC01;
+        }
+
+        .links-acompanhantes h4 {
+            color: #005D2C;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+
+        .link-acompanhante {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .link-acompanhante strong {
+            display: block;
+            margin-bottom: 10px;
+            color: #005D2C;
+        }
+
+        .link-box {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .link-box input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .link-box button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-copiar {
+            background: linear-gradient(135deg, #6ECC01, #357C00);
+            color: white;
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+
+        .link-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .aviso-menores {
+            background: #E3F2FD;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #2196F3;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .form-content {
+                padding: 30px 20px;
+            }
+            
+            .section {
+                padding: 20px 15px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .link-box {
+                flex-direction: column;
+            }
+
+            .link-box input {
+                width: 100%;
+            }
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>VITÓRIA CAUCAIA</h1>
+            <div class="subtitle">Entrega de Chaves</div>
+            <div class="address">Rua Padre Climério Chaves, 536 – Caucaia</div>
+            <div style="margin-top: 15px; font-size: 1.1em; font-weight: 500;">
+                📅 Data: 20 de dezembro de 2025
+            </div>
+        </div>
+
+        <div class="form-content">
+            <div class="intro-text">
+                <strong>Prezado(a) Cliente,</strong><br><br>
+                Para garantir um processo de entrega de chaves ágil e organizado, pedimos a sua colaboração no preenchimento deste formulário. Suas informações nos ajudarão a preparar tudo da melhor forma possível para o grande dia! 🏠✨
+            </div>
+
+            <form id="keyDeliveryForm">
+                <div class="section">
+                    <h3>Informações Pessoais</h3>
+                    
+                    <div class="form-group">
+                        <label for="nomeCompleto">Nome Completo *</label>
+                        <input type="text" id="nomeCompleto" name="nomeCompleto" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cpf">CPF *</label>
+                        <input type="text" id="cpf" name="cpf" class="form-control" placeholder="000.000.000-00" required>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Detalhes da Unidade</h3>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="apartamento">Número do Apartamento *</label>
+                            <input type="text" id="apartamento" name="apartamento" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bloco">Bloco *</label>
+                            <input type="text" id="bloco" name="bloco" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Escolha de Horário</h3>
+                    <p style="margin-bottom: 20px; color: #6c757d;">Para otimizar o fluxo de atendimento e evitar aglomerações, escolha o período de sua preferência:</p>
+                    
+                    <div class="radio-group">
+                        <label class="radio-item">
+                            <input type="radio" name="horario" value="08:00-09:00" required>
+                            <span>🌅 08:00h às 09:00h</span>
+                        </label>
+                        
+                        <label class="radio-item">
+                            <input type="radio" name="horario" value="09:00-10:00" required>
+                            <span>☀️ 09:00h às 10:00h</span>
+                        </label>
+                        
+                        <label class="radio-item">
+                            <input type="radio" name="horario" value="10:00-11:00" required>
+                            <span>🌤️ 10:00h às 11:00h</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Autorização de Uso de Imagem (Titular)</h3>
+                    
+                    <div class="termo-box">
+                        <h4>📸 Termo de Autorização de Uso de Imagem</h4>
+                        <p>Autorizo a utilização da minha imagem em fotografias e vídeos captados durante o evento de Entrega de Chaves do empreendimento Vitória Caucaia, para fins de divulgação em:</p>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li>Redes sociais (Instagram, Facebook, LinkedIn, etc.)</li>
+                            <li>Site institucional da construtora</li>
+                            <li>Materiais promocionais e publicitários</li>
+                            <li>Apresentações institucionais</li>
+                        </ul>
+                        <p style="margin-top: 10px;"><small>Prazo de validade: 5 anos a partir da data do evento.</small></p>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="autorizacaoTitular" name="autorizacaoTitular" required>
+                        <label for="autorizacaoTitular" style="margin: 0;">
+                            <strong>✅ Autorizo o uso de minha imagem</strong> conforme os termos acima
+                        </label>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Acompanhantes</h3>
+                    <p style="margin-bottom: 20px; color: #6c757d;">Quantas pessoas comparecerão à entrega (incluindo você)?</p>
+                    
+                    <div class="radio-group">
+                        <label class="radio-item">
+                            <input type="radio" name="acompanhantes" value="1" required>
+                            <span>👤 Apenas eu</span>
+                        </label>
+                        
+                        <label class="radio-item">
+                            <input type="radio" name="acompanhantes" value="2" required>
+                            <span>👥 Eu e mais uma pessoa (2 pessoas)</span>
+                        </label>
+                        
+                        <label class="radio-item">
+                            <input type="radio" name="acompanhantes" value="3" required>
+                            <span>👥👤 Eu e mais duas pessoas (3 pessoas)</span>
+                        </label>
+                    </div>
+
+                    <div id="acompanhantesContainer" class="acompanhantes-container">
+                        <h4 style="color: #005D2C; margin-bottom: 20px;">📝 Dados dos Acompanhantes</h4>
+                        <p style="color: #6c757d; margin-bottom: 20px;">Preencha os dados de cada acompanhante. Após enviar o formulário, você receberá links individuais para que cada acompanhante maior de 18 anos autorize o uso de sua própria imagem.</p>
+                        
+                        <div id="acompanhantesFields"></div>
+                    </div>
+                </div>
+
+                <div class="requirements">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <h4 style="margin: 0;">Documentos Obrigatórios para Retirada das Chaves</h4>
+                        <button type="button" onclick="baixarPDF()" style="background: linear-gradient(135deg, #357C00, #005D2C); color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; font-size: 0.9em;">
+                            📄 Baixar PDF
+                        </button>
+                    </div>
+                    <ul>
+                        <li><strong>Documento de Identificação:</strong> RG ou CNH original com foto do titular do contrato</li>
+                        <li><strong>Procuração (se aplicável):</strong> Apenas procuração pública original ou procuração com assinatura pelo certificado ICP Brasil/E-notariado. Procurações digitais simples do GOV não são aceitas</li>
+                        <li><strong>Representante:</strong> Documento de identificação original com foto do representante (se procuração for utilizada)</li>
+                        <li><strong>Regularidade Contratual:</strong> Cumprimento integral de todas as condições contratuais</li>
+                    </ul>
+                    <div style="background: rgba(211, 47, 47, 0.1); padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 3px solid #d32f2f;">
+                        <strong>⚠️ IMPORTANTE:</strong> Procurações emitidas digitalmente pelo portal GOV.BR sem certificação ICP Brasil ou E-notariado <strong>NÃO SERÃO ACEITAS</strong>. Apenas procurações públicas tradicionais ou digitais com certificado ICP Brasil/E-notariado são válidas.
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div style="display: flex; align-items: flex-start; gap: 15px;">
+                        <input type="checkbox" id="confirmacao" name="confirmacao" required style="margin-top: 4px; scale: 1.3;">
+                        <label for="confirmacao" style="flex: 1;">
+                            <strong>Confirmação:</strong> Ao marcar esta opção, confirmo minha presença no evento de entrega de chaves e declaro ter ciência de todas as condições e requisitos apresentados neste formulário.
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <div class="loading" id="loading"></div>
+                    <span id="btnText">🔑 Confirmar Presença</span>
+                </button>
+
+                <div id="confirmationMessage" class="confirmation-message">
+                    <div style="font-size: 3em; margin-bottom: 20px;">🎉</div>
+                    <h3 style="font-size: 2em; margin-bottom: 15px; color: #005D2C;">Presença Confirmada!</h3>
+                    <p style="font-size: 1.5em; font-weight: 600; margin: 20px 0; color: #357C00;">✨ Te aguardamos lá! ✨</p>
+                    <div style="font-size: 2em; margin: 20px 0;">🏠 🔑 🎊</div>
+                    
+                    <div style="border-top: 2px solid #6ECC01; margin: 25px 0; padding-top: 20px;">
+                        <p style="font-size: 0.95em; margin-bottom: 15px; color: #6c757d;"><strong>Resumo da sua confirmação:</strong></p>
+                        <div id="dadosConfirmacao"></div>
+                    </div>
+
+                    <div id="linksAcompanhantes" class="links-acompanhantes" style="display: none;">
+                        <h4>⚠️ IMPORTANTE - Encaminhe os links abaixo:</h4>
+                        <p style="text-align: left; color: #6c757d; margin-bottom: 20px;">
+                            Cada acompanhante maior de 18 anos precisa autorizar o uso de sua própria imagem. 
+                            Por favor, encaminhe os links individuais abaixo:
+                        </p>
+                        <div id="linksAcompanhantesContainer"></div>
+                        
+                        <div class="aviso-menores" id="avisoMenores" style="display: none;">
+                            <strong>👨‍👩‍👧‍👦 Menores de 18 anos:</strong>
+                            <div id="menoresLista"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="errorMessage" class="error-message">
+                    <h3>Erro ao Enviar Confirmação</h3>
+                    <p id="errorText">Ocorreu um erro ao enviar sua confirmação. Por favor, tente novamente ou entre em contato conosco.</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/SUA_URL_AQUI/exec';
+
+        // Formatação de CPF
+        document.getElementById('cpf').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            e.target.value = value;
+        });
+
+        // Seleção visual dos radio buttons
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll(`input[name="${this.name}"]`).forEach(r => {
+                    r.closest('.radio-item').classList.remove('selected');
+                });
+                this.closest('.radio-item').classList.add('selected');
+            });
+        });
+
+        // Controle de acompanhantes
+        document.querySelectorAll('input[name="acompanhantes"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const container = document.getElementById('acompanhantesContainer');
+                const fieldsContainer = document.getElementById('acompanhantesFields');
+                const qtd = parseInt(this.value);
+                
+                fieldsContainer.innerHTML = '';
+                
+                if (qtd > 1) {
+                    container.style.display = 'block';
+                    
+                    for (let i = 1; i < qtd; i++) {
+                        const acompItem = document.createElement('div');
+                        acompItem.className = 'acompanhante-item';
+                        acompItem.innerHTML = `
+                            <h4>Acompanhante ${i}</h4>
+                            
+                            <div class="form-group">
+                                <label for="nomeAcomp${i}">Nome Completo *</label>
+                                <input type="text" id="nomeAcomp${i}" name="nomeAcomp${i}" class="form-control" required>
+                            </div>
+                            
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="menorAcomp${i}" name="menorAcomp${i}">
+                                <label for="menorAcomp${i}" style="margin: 0;">
+                                    Este acompanhante é menor de 18 anos
+                                </label>
+                            </div>
+
+                            <div class="aviso-menores" id="avisoMenor${i}" style="display: none; margin-top: 15px;">
+                                <p style="margin: 0; font-size: 0.9em;">
+                                    ✅ Como responsável legal, você estará autorizando o uso de imagem deste menor.
+                                </p>
+                            </div>
+                        `;
+                        
+                        fieldsContainer.appendChild(acompItem);
+                        
+                        // Controle de checkbox de menor
+                        document.getElementById(`menorAcomp${i}`).addEventListener('change', function() {
+                            const avisoMenor = document.getElementById(`avisoMenor${i}`);
+                            avisoMenor.style.display = this.checked ? 'block' : 'none';
+                        });
+                    }
+                } else {
+                    container.style.display = 'none';
+                }
+            });
+        });
+
+        // Funções auxiliares
+        function gerarTokenFamilia() {
+            return 'FAM_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function gerarTokenIndividual(nomeAcompanhante, tokenFamilia) {
+            const base = `${tokenFamilia}_${nomeAcompanhante}_${Date.now()}`;
+            return 'ACOMP_' + btoa(base).replace(/[^a-zA-Z0-9]/g, '');
+        }
+
+        function copiarLink(idCampo) {
+            const campo = document.getElementById(idCampo);
+            campo.select();
+            campo.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            
+            const btn = campo.nextElementSibling;
+            const textoOriginal = btn.textContent;
+            btn.textContent = '✓ Copiado!';
+            setTimeout(() => {
+                btn.textContent = textoOriginal;
+            }, 2000);
+        }
+
+        function compartilharWhatsApp(link, nomeAcompanhante) {
+            const mensagem = encodeURIComponent(
+                `Oi ${nomeAcompanhante}! Confirmei nossa presença na entrega das chaves do Vitória Caucaia 🎉\n\n` +
+                `A construtora precisa da sua autorização para uso de imagem no evento.\n` +
+                `Por favor, acesse este link e preencha (leva 1 minuto):\n\n${link}\n\n` +
+                `Obrigado!`
+            );
+            window.open(`https://wa.me/?text=${mensagem}`, '_blank');
+        }
+
+        // Submissão do formulário
+        document.getElementById('keyDeliveryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const btnText = document.getElementById('btnText');
+            const confirmationMessage = document.getElementById('confirmationMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            submitBtn.disabled = true;
+            loading.style.display = 'inline-block';
+            btnText.textContent = 'Enviando...';
+            
+            confirmationMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            
+            try {
+                // Coleta dados do titular
+                const dadosTitular = {
+                    nome: document.getElementById('nomeCompleto').value,
+                    cpf: document.getElementById('cpf').value,
+                    apartamento: document.getElementById('apartamento').value,
+                    bloco: document.getElementById('bloco').value,
+                    horario: document.querySelector('input[name="horario"]:checked').value,
+                    autorizouImagem: document.getElementById('autorizacaoTitular').checked
+                };
+                
+                const qtdAcompanhantes = parseInt(document.querySelector('input[name="acompanhantes"]:checked').value);
+                const tokenFamilia = gerarTokenFamilia();
+                
+                // Coleta dados dos acompanhantes
+                const acompanhantes = [];
+                for (let i = 1; i < qtdAcompanhantes; i++) {
+                    const nome = document.getElementById(`nomeAcomp${i}`).value;
+                    const eMenor = document.getElementById(`menorAcomp${i}`).checked;
+                    
+                    acompanhantes.push({
+                        nome: nome,
+                        eMenor: eMenor,
+                        tokenIndividual: eMenor ? null : gerarTokenIndividual(nome, tokenFamilia),
+                        status: eMenor ? 'Autorizado pelo responsável' : 'Pendente'
+                    });
+                }
+                
+                // Monta dados para envio
+                const dados = {
+                    acao: 'confirmarPresenca',
+                    titular: dadosTitular,
+                    tokenFamilia: tokenFamilia,
+                    acompanhantes: acompanhantes,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Envia para Google Sheets
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dados)
+                });
+                
+                // Exibe confirmação
+                mostrarConfirmacao(dadosTitular, acompanhantes, tokenFamilia);
+                
+            } catch (error) {
+                console.error('Erro ao enviar:', error);
+                document.getElementById('errorText').textContent = 
+                    'Erro de conexão. Verifique sua internet e tente novamente. Se o problema persistir, entre em contato conosco.';
+                errorMessage.style.display = 'block';
+                errorMessage.scrollIntoView({ behavior: 'smooth' });
+                
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+                btnText.textContent = '🔑 Confirmar Presença';
+            }
+        });
+
+        function mostrarConfirmacao(dadosTitular, acompanhantes, tokenFamilia) {
+            const horarioMap = {
+                '08:00-09:00': '08:00h às 09:00h',
+                '09:00-10:00': '09:00h às 10:00h',
+                '10:00-11:00': '10:00h às 11:00h'
+            };
+            
+            const qtdTotal = 1 + acompanhantes.length;
+            
+            const resumo = `
+                <div style="text-align: left; background: white; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                    <strong>Nome:</strong> ${dadosTitular.nome}<br>
+                    <strong>CPF:</strong> ${dadosTitular.cpf}<br>
+                    <strong>Apartamento:</strong> ${dadosTitular.apartamento} - Bloco ${dadosTitular.bloco}<br>
+                    <strong>Horário escolhido:</strong> ${horarioMap[dadosTitular.horario]}<br>
+                    <strong>Número de pessoas:</strong> ${qtdTotal}<br>
+                    <strong>Autorização de imagem (você):</strong> ${dadosTitular.autorizouImagem ? '✅ Autorizado' : '❌ Não autorizado'}<br>
+                    <strong>Confirmado em:</strong> ${new Date().toLocaleString('pt-BR')}
+                </div>
+            `;
+            
+            document.getElementById('dadosConfirmacao').innerHTML = resumo;
+            
+            // Exibe links dos acompanhantes
+            const acompanhantesMaiores = acompanhantes.filter(a => !a.eMenor);
+            const acompanhantesMenores = acompanhantes.filter(a => a.eMenor);
+            
+            if (acompanhantesMaiores.length > 0) {
+                const linksContainer = document.getElementById('linksAcompanhantesContainer');
+                const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '') + 'autorizacao.html';
+                
+                linksContainer.innerHTML = '';
+                
+                acompanhantesMaiores.forEach((acomp, index) => {
+                    const linkCompleto = `${baseUrl}?token=${acomp.tokenIndividual}`;
+                    const linkId = `link-acomp-${index}`;
+                    
+                    const linkDiv = document.createElement('div');
+                    linkDiv.className = 'link-acompanhante';
+                    linkDiv.innerHTML = `
+                        <strong>📱 ${acomp.nome}</strong>
+                        <div class="link-box">
+                            <input type="text" value="${linkCompleto}" readonly id="${linkId}">
+                            <button class="btn-copiar" onclick="copiarLink('${linkId}')">📋 Copiar</button>
+                            <button class="btn-whatsapp" onclick="compartilharWhatsApp('${linkCompleto}', '${acomp.nome}')">💬 WhatsApp</button>
+                        </div>
+                    `;
+                    
+                    linksContainer.appendChild(linkDiv);
+                });
+                
+                document.getElementById('linksAcompanhantes').style.display = 'block';
+            }
+            
+            if (acompanhantesMenores.length > 0) {
+                const menoresLista = document.getElementById('menoresLista');
+                menoresLista.innerHTML = acompanhantesMenores.map(a => 
+                    `<p style="margin: 5px 0;">✅ ${a.nome} - Autorizado por você como responsável legal</p>`
+                ).join('');
+                document.getElementById('avisoMenores').style.display = 'block';
+            }
+            
+            // Limpa formulário e mostra mensagem
+            const formContent = document.querySelector('.form-content');
+            const confirmationMessage = document.getElementById('confirmationMessage');
+            
+            confirmationMessage.style.display = 'block';
+            
+            formContent.innerHTML = '';
+            formContent.appendChild(confirmationMessage);
+            formContent.classList.add('success-mode');
+            
+            setTimeout(() => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }, 100);
+        }
+
+        // Validação de campos
+        document.querySelectorAll('input[required]').forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value.trim() === '') {
+                    this.style.borderColor = '#e74c3c';
+                } else {
+                    this.style.borderColor = '#6ECC01';
+                }
+            });
+        });
+
+        document.getElementById('cpf').addEventListener('blur', function() {
+            const cpf = this.value.replace(/\D/g, '');
+            if (cpf.length !== 11) {
+                this.style.borderColor = '#e74c3c';
+                this.title = 'CPF deve ter 11 dígitos';
+            } else {
+                this.style.borderColor = '#6ECC01';
+                this.title = '';
+            }
+        });
+
+        // Função para baixar PDF
+        function baixarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(20);
+            doc.setTextColor(0, 81, 42);
+            doc.text('VITÓRIA CAUCAIA', 105, 20, { align: 'center' });
+            
+            doc.setFontSize(14);
+            doc.text('Entrega de Chaves', 105, 30, { align: 'center' });
+            
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.text('Rua Padre Climério Chaves, 536 – Caucaia', 105, 38, { align: 'center' });
+            doc.text('Data: 20 de dezembro de 2025', 105, 45, { align: 'center' });
+            
+            doc.setDrawColor(110, 204, 1);
+            doc.setLineWidth(0.5);
+            doc.line(20, 50, 190, 50);
+            
+            doc.setFontSize(14);
+            doc.setTextColor(0, 81, 42);
+            doc.text('Documentos Obrigatórios para Retirada das Chaves', 20, 60);
+            
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            
+            let y = 70;
+            
+            doc.setFont(undefined, 'bold');
+            doc.text('✓ Documento de Identificação:', 25, y);
+            doc.setFont(undefined, 'normal');
+            const texto1 = doc.splitTextToSize('RG ou CNH original com foto do titular do contrato', 160);
+            doc.text(texto1, 25, y + 6);
+            y += 18;
+            
+            doc.setFont(undefined, 'bold');
+            doc.text('✓ Procuração (se aplicável):', 25, y);
+            doc.setFont(undefined, 'normal');
+            const texto2 = doc.splitTextToSize('Apenas procuração pública original ou procuração com assinatura pelo certificado ICP Brasil/E-notariado. Procurações digitais simples do GOV não são aceitas.', 160);
+            doc.text(texto2, 25, y + 6);
+            y += 26;
+            
+            doc.setFont(undefined, 'bold');
+            doc.text('✓ Representante:', 25, y);
+            doc.setFont(undefined, 'normal');
+            const texto3 = doc.splitTextToSize('Documento de identificação original com foto do representante (se procuração for utilizada)', 160);
+            doc.text(texto3, 25, y + 6);
+            y += 18;
+            
+            doc.setFont(undefined, 'bold');
+            doc.text('✓ Regularidade Contratual:', 25, y);
+            doc.setFont(undefined, 'normal');
+            const texto4 = doc.splitTextToSize('Cumprimento integral de todas as condições contratuais', 160);
+            doc.text(texto4, 25, y + 6);
+            y += 20;
+            
+            doc.setFillColor(255, 235, 238);
+            doc.setDrawColor(211, 47, 47);
+            doc.setLineWidth(1);
+            doc.rect(20, y, 170, 35, 'FD');
+            
+            doc.setFontSize(12);
+            doc.setTextColor(211, 47, 47);
+            doc.setFont(undefined, 'bold');
+            doc.text('⚠️ IMPORTANTE:', 25, y + 8);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont(undefined, 'normal');
+            const textoImportante = doc.splitTextToSize('Procurações emitidas digitalmente pelo portal GOV.BR sem certificação ICP Brasil ou E-notariado NÃO SERÃO ACEITAS. Apenas procurações públicas tradicionais ou digitais com certificado ICP Brasil/E-notariado são válidas.', 160);
+            doc.text(textoImportante, 25, y + 15);
+            
+            doc.setFontSize(9);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Documento gerado em: ' + new Date().toLocaleString('pt-BR'), 105, 280, { align: 'center' });
+            
+            doc.save('Documentos_Obrigatorios_Vitoria_Caucaia.pdf');
+        }
+    </script>
+</body>
+</html>
