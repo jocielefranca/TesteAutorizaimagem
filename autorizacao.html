@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head> 
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autorização de Uso de Imagem - Vitória Caucaia</title>
@@ -303,11 +303,11 @@
         }
 
         .pulseira-info {
-            background: linear-gradient(135deg, #FFF9C4, #FFF59D);
+            background: linear-gradient(135deg, #C8E6C9, #A5D6A7);
             padding: 20px;
             border-radius: 10px;
             margin-top: 25px;
-            border-left: 4px solid #F57F17;
+            border-left: 4px solid #2E7D32;
             text-align: center;
         }
 
@@ -315,25 +315,23 @@
             display: block;
             font-size: 1.2em;
             margin-bottom: 10px;
-            color: #F57F17;
-        }
-
-        .pulseira-verde {
-            background: linear-gradient(135deg, #C8E6C9, #A5D6A7);
-            border-left-color: #2E7D32;
-        }
-
-        .pulseira-verde strong {
             color: #2E7D32;
         }
 
-        .pulseira-vermelha {
-            background: linear-gradient(135deg, #FFCDD2, #EF9A9A);
-            border-left-color: #C62828;
+        .sem-pulseira-info {
+            background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
+            border-left: 4px solid #1976D2;
+            text-align: center;
         }
 
-        .pulseira-vermelha strong {
-            color: #C62828;
+        .sem-pulseira-info strong {
+            display: block;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #1976D2;
         }
 
         @media (max-width: 768px) {
@@ -476,10 +474,7 @@
                 <h2 style="color: #005D2C; margin-bottom: 20px;">Autorização Registrada!</h2>
                 <p style="font-size: 1.1em; color: #666; margin-bottom: 25px;">Obrigado por confirmar sua autorização.</p>
                 
-                <div id="pulseiraInfo" class="pulseira-info">
-                    <strong>No dia do evento:</strong>
-                    <p id="pulseiraTexto"></p>
-                </div>
+                <div id="pulseiraInfo"></div>
 
                 <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
                     <p style="color: #666; margin-bottom: 10px;"><strong>Resumo da sua autorização:</strong></p>
@@ -527,13 +522,12 @@
                 return;
             }
             
-            // Armazena o token no campo hidden
             document.getElementById('tokenIndividual').value = token;
         };
 
         function mostrarErro(mensagem) {
             document.getElementById('formContainer').style.display = 'none';
-            document.getElementById('errorMessage').textContent = mensagem;
+            document.getElementById('errorMessage').innerHTML = mensagem;
             document.getElementById('errorContainer').style.display = 'block';
         }
 
@@ -577,14 +571,30 @@
                 
                 console.log('Enviando dados:', dados);
                 
-                await fetch(SCRIPT_URL, {
+                const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(dados)
                 });
+                
+                // Tenta ler a resposta
+                try {
+                    const resultado = await response.json();
+                    
+                    // Se retornou erro de link já usado
+                    if (!resultado.sucesso && resultado.jaUsado) {
+                        mostrarErro('⚠️ Este link já foi utilizado anteriormente.<br><br>Cada acompanhante só pode autorizar uma vez. Se você precisa alterar sua autorização, entre em contato com a pessoa que enviou o link.');
+                        submitBtn.disabled = false;
+                        btnLoading.style.display = 'none';
+                        btnText.textContent = 'Confirmar Autorização';
+                        return;
+                    }
+                } catch (e) {
+                    // No-cors não permite ler resposta, mas o envio funcionou
+                    console.log('Dados enviados (no-cors mode)');
+                }
                 
                 // Mostra confirmação
                 mostrarSucesso(nome, dados.cpf, autorizou);
@@ -603,14 +613,19 @@
             document.getElementById('formContainer').style.display = 'none';
             
             const pulseiraInfo = document.getElementById('pulseiraInfo');
-            const pulseiraTexto = document.getElementById('pulseiraTexto');
             
             if (autorizou) {
-                pulseiraInfo.classList.add('pulseira-verde');
-                pulseiraTexto.textContent = 'Você receberá uma PULSEIRA VERDE indicando que autorizou o uso de imagem. Os fotógrafos poderão registrar sua presença no evento! 📸';
+                pulseiraInfo.className = 'pulseira-info';
+                pulseiraInfo.innerHTML = `
+                    <strong>No dia do evento:</strong>
+                    <p>Você receberá uma <strong>PULSEIRA VERDE</strong> indicando que autorizou o uso de imagem. Os fotógrafos poderão registrar sua presença no evento! 📸</p>
+                `;
             } else {
-                pulseiraInfo.classList.add('pulseira-vermelha');
-                pulseiraTexto.textContent = 'Você receberá uma PULSEIRA VERMELHA indicando que não autorizou o uso de imagem. Os fotógrafos não registrarão sua presença no evento.';
+                pulseiraInfo.className = 'sem-pulseira-info';
+                pulseiraInfo.innerHTML = `
+                    <strong>No dia do evento:</strong>
+                    <p>Você <strong>não receberá pulseira</strong> e os fotógrafos não registrarão sua presença no evento, respeitando sua escolha de não autorizar o uso de imagem.</p>
+                `;
             }
             
             document.getElementById('nomeConfirmacao').textContent = nome;
